@@ -61,19 +61,20 @@ Router.post("/auth", async (req, res) => {
       { expiresIn: 3600 * 24 },
       (err, token) => {
         if (err) throw err;
-        if (!req.signedCookies.token) {
-          res.cookie("tokenAdmin", token, {
-            maxAge: 3600 * 24 * 1000,
-            signed: true,
-            httpOnly: true,
-            sameSite: "none",
-            secure: true,
-          });
-        }
+        // if (!req.signedCookies.token) {
+        //   res.cookie("tokenAdmin", token, {
+        //     maxAge: 3600 * 24 * 1000,
+        //     signed: true,
+        //     httpOnly: true,
+        //     sameSite: "none",
+        //     secure: true,
+        //   });
+        // }
         res.json({
           _id: adminExisting.id,
           loginID: adminExisting.loginID,
           imageAdmin: adminExisting.imageAdmin,
+          token: token,
         });
       }
     );
