@@ -14,11 +14,11 @@ const app = express();
 //   "https://vmoflix-vn.web.app",
 //   "https://exercise-blog-api.vercel.app",
 // ];
-app.use(cors(corsConfig));
+// app.use(cors(corsConfig));
 
-// app.use(cors({
-//   origin: '*'
-// }));
+app.use(cors({
+  origin: '*'
+}));
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
@@ -49,6 +49,7 @@ app.use("/api/subscription", require("./routes/subscription"));
 app.use("/api/file", require("./routes/file"));
 
 // app.use("/", require("./routes/dumpData"));
+
 const port = process.env.PORT_SERVER || 9000;
 app.listen(port, () => {
   console.log(`Server :: Running @ 'http://localhost:${port}'`);

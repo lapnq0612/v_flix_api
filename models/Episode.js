@@ -18,10 +18,6 @@ const EpisodeSchema = new Schema({
         type: String,
         unique: true,
     },
-    poster: {
-        type: String,
-        required: true,
-    },
     url: {
         type: String,
         required: true,

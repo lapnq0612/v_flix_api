@@ -319,57 +319,23 @@ Router.post("/", addFullUrl, async (req, res) => {
       genre: film.genre,
     });
 
-    const newEpisodes = await Promise.all(
-      film.episodes.map(async (episode, index) => {
-        const episodeVideoInfo = await ytdl.getInfo(episode.video);
+    const Episodes = film.episodes.map((episode, index) => {
+      const slug = `${film.title} ${episode.title} ${episode.episode}`;
+      return {
+        ...episode,
+        url: episode.video,
+        slug: slugify(slug, { lower: true, strict: true }),
+        film: newFilm._id,
+      };
+    })
+    const newEpisodes = await Episode.insertMany(Episodes);
 
-        // Download video
-        const episodeVideoName = `video-${uuidv4()}.mp4`;
-        const episodeVideoPath = path.join(filmPath, episodeVideoName);
-        ytdl(episode.video, {
-          format: 'mp4',
-          quality: 'highest',
-          filter: "audioandvideo",
-        }).pipe(fs.createWriteStream(episodeVideoPath));
-
-        // Download thumbnail
-        const episodeThumbnailUrl = episodeVideoInfo.videoDetails.thumbnails.slice(-1)[0].url;
-        const episodeThumbnailName = `thumbnail-${uuidv4()}.png`;
-        const episodeThumbnailPath = path.join(filmPath, episodeThumbnailName);
-        axios.get(episodeThumbnailUrl, { responseType: 'arraybuffer' })
-          .then(response => {
-            const imageBuffer = Buffer.from(response.data);
-
-            return sharp(imageBuffer)
-              .png()
-              .toBuffer();
-          })
-          .then(async pngBuffer => {
-            return await fs.promises.writeFile(episodeThumbnailPath, pngBuffer);
-          });
-
-        const slug = `${film.title} ${episode.title} ${episode.episode}`;
-        const newEpisode = await Episode.create({
-          ...episode,
-          poster: episodeThumbnailPath,
-          url: episode.video,
-          video: episodeVideoPath,
-          slug: slugify(slug, { lower: true, strict: true }),
-          film: newFilm._id,
-        });
-        return newEpisode;
-      })
-    );
-
+    console.log("newEpisodes", newEpisodes)
     newFilm.episodes = newEpisodes.map((ep) => ep._id);
     await newFilm.save();
     await newFilm.populate('episodes').execPopulate();
 
     newFilm.poster = `${req.fullUrl}/${newFilm.poster}`;
-    newFilm.episodes.forEach((episode) => {
-      episode.poster = `${req.fullUrl}/${episode.poster}`;
-      episode.video = `${req.fullUrl}/${episode.video}`;
-    });
     await session.commitTransaction();
     res.json(newFilm);
   } catch (err) {
