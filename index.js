@@ -5,7 +5,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 dotenv.config();
 // const bcrypt = require("bcrypt");
-const corsConfig = require("./config/index");
+// const corsConfig = require("./config/index");
 
 const app = express();
 // const whitelist = [
@@ -16,9 +16,11 @@ const app = express();
 // ];
 // app.use(cors(corsConfig));
 
-app.use(cors({
-  origin: '*'
-}));
+app.use(cors());
+app.options('*', cors());
+// app.use(cors({
+//   origin: '*'
+// }));
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
