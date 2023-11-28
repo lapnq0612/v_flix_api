@@ -18,10 +18,6 @@ const EpisodeSchema = new Schema({
         type: String,
         unique: true,
     },
-    url: {
-        type: String,
-        required: true,
-    },
     video: {
         type: String,
         required: true,

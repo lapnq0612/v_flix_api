@@ -28,8 +28,6 @@ Router.get("/", addFullUrl, async (req, res) => {
         if (!episode) {
             return res.status(404).json({ message: 'Episode not found' });
         }
-        episode.poster = `${req.fullUrl}/${episode.poster}`;
-        episode.video = `${req.fullUrl}/${episode.video}`;
         episode.film.poster = `${req.fullUrl}/${episode.film.poster}`;
         res.json(episode);
     } catch (err) {
@@ -75,35 +73,11 @@ Router.post("/", addFullUrl, async (req, res) => {
             return res.status(404).json({ message: 'Film not found' });
         }
 
-        // Check title film exists
+        // Check part of film exists
         const existingEpisode = await Episode.findOne({ film: film._id, episode: req.body.episode });
         if (existingEpisode) {
             return res.status(400).json({ error: `There is already episode '${existingEpisode.episode}' in this film '${film.title}'` });
         }
-        // Dowload video youtube and save it to folder
-        const episodeVideoInfo = await ytdl.getInfo(req.body.video);
-        const episodeVideoName = `video-${uuidv4()}.mp4`;
-        const episodeVideoPath = path.join(filmPath, episodeVideoName);
-        const downloadVideoPromise = ytdl(req.body.video, {
-            format: 'mp4',
-            quality: 'highest',
-            filter: "audioandvideo",
-        }).pipe(fs.createWriteStream(episodeVideoPath));
-
-        const episodeThumbnailUrl = episodeVideoInfo.videoDetails.thumbnails.slice(-1)[0].url;
-        const episodeThumbnailName = `thumbnail-${uuidv4()}.png`;
-        const episodeThumbnailPath = path.join(filmPath, episodeThumbnailName);
-        const downloadThumbnailPromise = axios.get(episodeThumbnailUrl, { responseType: 'arraybuffer' })
-            .then(response => {
-                const imageBuffer = Buffer.from(response.data);
-
-                return sharp(imageBuffer)
-                    .png()
-                    .toBuffer();
-            })
-            .then(async pngBuffer => {
-                return await fs.promises.writeFile(episodeThumbnailPath, pngBuffer);
-            });
 
         const options = {
             lower: true,
@@ -112,20 +86,16 @@ Router.post("/", addFullUrl, async (req, res) => {
         const slug = slugify(`${film.title} ${req.body.title} ${req.body.episode}`, options);
         const episode = new Episode({
             ...req.body,
-            poster: episodeThumbnailPath,
-            video: episodeVideoPath,
             slug,
         });
 
-        const savePromise = episode.save()
+        episode.save()
             .then(() => {
                 film.episodes = [...film.episodes, episode._id];
                 return film.save();
             });
 
-        await Promise.all([downloadVideoPromise, downloadThumbnailPromise, savePromise]);
         await session.commitTransaction();
-        episode.poster = `${req.fullUrl}/${episode.poster}`;
         episode.video = `${req.fullUrl}/${episode.video}`;
         res.status(201).json(episode);
     } catch (err) {
@@ -168,47 +138,10 @@ Router.patch("/:id", addFullUrl, async (req, res) => {
             }
         }
 
-        // Remove the old poster image file
-        if (episode.poster) {
-            if (fs.existsSync(path.join(episode.poster))) {
-                await unlinkAsync(path.join(episode.poster));
-            }
-        }
-
         if (episode.video) {
             if (fs.existsSync(path.join(episode.video))) {
                 await unlinkAsync(path.join(episode.video));
             }
-        }
-
-        // Dowload video youtube and save it to folder
-        if (req.body.video) {
-            const episodeVideoInfo = await ytdl.getInfo(req.body.video);
-            const episodeVideoName = `video-${uuidv4()}.mp4`;
-            const episodeVideoPath = path.join(filmPath, episodeVideoName);
-            var downloadVideoPromise = ytdl(req.body.video, {
-                format: 'mp4',
-                quality: 'highest',
-                filter: "audioandvideo",
-            }).pipe(fs.createWriteStream(episodeVideoPath));
-
-            const episodeThumbnailUrl = episodeVideoInfo.videoDetails.thumbnails.slice(-1)[0].url;
-            const episodeThumbnailName = `thumbnail-${uuidv4()}.png`;
-            const episodeThumbnailPath = path.join(filmPath, episodeThumbnailName);
-            var downloadThumbnailPromise = axios.get(episodeThumbnailUrl, { responseType: 'arraybuffer' })
-                .then(response => {
-                    const imageBuffer = Buffer.from(response.data);
-
-                    return sharp(imageBuffer)
-                        .png()
-                        .toBuffer();
-                })
-                .then(async pngBuffer => {
-                    return await fs.promises.writeFile(episodeThumbnailPath, pngBuffer);
-                });
-            req.body.poster = episodeThumbnailPath;
-            req.body.url = req.body.video;
-            req.body.video = episodeVideoPath;
         }
 
         const slug = slugify(`${episode.film.title} ${req.body.title} ${req.body.episode}`, {
@@ -219,8 +152,7 @@ Router.patch("/:id", addFullUrl, async (req, res) => {
 
         // Update the film object with the request body
         Object.assign(episode, req.body);
-        const savePromise = episode.save()
-        await Promise.all([downloadVideoPromise, downloadThumbnailPromise, savePromise]);
+        episode.save()
         await session.commitTransaction();
 
         const obj = {
@@ -228,8 +160,7 @@ Router.patch("/:id", addFullUrl, async (req, res) => {
             "title": episode.title,
             "description": episode.description,
             "episode": episode.episode,
-            "video": `${req.fullUrl}/${episode.video}`,
-            "poster": `${req.fullUrl}/${episode.poster}`,
+            "video": episode.video,
             "url": episode.url,
             "slug": episode.slug,
             "date": episode.date,
@@ -271,19 +202,6 @@ Router.delete('/:id', async (req, res) => {
         const episode = await Episode.findById(id);
         if (!episode) {
             return res.status(404).json({ message: 'Episode not found' });
-        }
-
-        // Remove the poster image file
-        if (episode.poster) {
-            if (fs.existsSync(path.join(episode.poster))) {
-                await unlinkAsync(path.join(episode.poster));
-            }
-        }
-
-        if (episode.video) {
-            if (fs.existsSync(path.join(episode.video))) {
-                await unlinkAsync(path.join(episode.video));
-            }
         }
 
         //   Delete the episode object

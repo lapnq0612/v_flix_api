@@ -45,10 +45,6 @@ Router.get("/", addFullUrl, async (req, res) => {
 
     film.poster = `${req.fullUrl}/${film.poster}`;
     film.episodes.sort((a, b) => (a.episode > b.episode) ? 1 : -1);
-    film.episodes.forEach((episode) => {
-      episode.poster = `${req.fullUrl}/${episode.poster}`;
-      episode.video = `${req.fullUrl}/${episode.video}`;
-    });
 
     res.json(film);
   } catch (err) {
@@ -125,14 +121,18 @@ Router.get("/recent", authUser, addFullUrl, async (req, res) => {
     const user = req.user;
     // user.history.sort((a, b) => a.date - b.date);
     const history = user.history;
+    console.log("history", history)
     const episodeTimestamps = history.reduce((acc, { episodeId, date }) => {
       acc[episodeId] = date;
       return acc;
     }, {});
 
+    console.log("episodeTimestamps", episodeTimestamps)
     var listEpisodeObjects = await Episode.find({
       _id: { $in: Object.keys(episodeTimestamps) },
     });
+
+    console.log('listEpisodeObjects', listEpisodeObjects)
     const listEpisodes = [];
     const listFilmIds = [];
     listEpisodeObjects.map(item => {
@@ -142,8 +142,7 @@ Router.get("/recent", authUser, addFullUrl, async (req, res) => {
           "title": item.title,
           "description": item.description,
           "episode": item.episode,
-          "video": `${req.fullUrl}/${item.video}`,
-          "poster": `${req.fullUrl}/${item.poster}`,
+          "video": item.video,
           "slug": item.slug,
           "date": episodeTimestamps[item.id],
           "film": item.film._id,
@@ -323,14 +322,13 @@ Router.post("/", addFullUrl, async (req, res) => {
       const slug = `${film.title} ${episode.title} ${episode.episode}`;
       return {
         ...episode,
-        url: episode.video,
+        video: episode.video,
         slug: slugify(slug, { lower: true, strict: true }),
         film: newFilm._id,
       };
     })
     const newEpisodes = await Episode.insertMany(Episodes);
 
-    console.log("newEpisodes", newEpisodes)
     newFilm.episodes = newEpisodes.map((ep) => ep._id);
     await newFilm.save();
     await newFilm.populate('episodes').execPopulate();
@@ -350,7 +348,7 @@ Router.post("/", addFullUrl, async (req, res) => {
 // @route PATCH film
 // @desc UPDATE A Film
 // @access Public
-Router.patch("/:id", async (req, res) => {
+Router.patch("/:id", addFullUrl,async (req, res) => {
   try {
     const updates = Object.keys(req.body);
     const allowedUpdates = [
@@ -409,7 +407,7 @@ Router.patch("/:id", async (req, res) => {
       // Update the film object with the new poster image path
       req.body.poster = `${filmPath}/${posterFilename}`;
     }
-
+    req.body.titleSearch = req.body.title;
     // Update the film object with the request body
     Object.assign(film, req.body);
 
@@ -417,6 +415,7 @@ Router.patch("/:id", async (req, res) => {
     await film.save();
 
     // Populate the episodes field and return the updated film object in the response
+    film.poster = `${req.fullUrl}/${film.poster}`;
     await film.populate('episodes').execPopulate();
     res.json(film);
 
@@ -448,17 +447,6 @@ Router.delete("/:id", async (req, res) => {
         await unlinkAsync(path.join(film.poster));
       }
     }
-
-
-    // Remove the old video file
-    film.episodes.forEach((episode) => {
-      if (fs.existsSync(path.join(episode.poster))) {
-        unlinkAsync(path.join(episode.poster));
-      }
-      if (fs.existsSync(path.join(episode.video))) {
-        unlinkAsync(path.join(episode.video));
-      }
-    });
 
     // Remove related episodes
     await Episode.deleteMany({ film: film._id });
