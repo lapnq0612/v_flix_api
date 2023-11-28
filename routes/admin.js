@@ -56,7 +56,10 @@ Router.post("/auth", async (req, res) => {
       return res.status(400).json({ msg: "Mật khẩu không đúng" });
     }
     jwt.sign(
-      { id: adminExisting.id },
+      {
+        id: adminExisting.id,
+        isAdmin: true,
+      },
       process.env.JWT_SECRET,
       { expiresIn: 3600 * 24 },
       (err, token) => {

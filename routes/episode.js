@@ -26,7 +26,7 @@ Router.get("/", addFullUrl, async (req, res) => {
         console.log(slug)
         const episode = await Episode.findOne({ slug }).populate("film");
         if (!episode) {
-            return res.status(404).json({ message: 'Episode not found' });
+            return res.status(404).json({ message: 'Tập phim không tìm thấy' });
         }
         episode.film.poster = `${req.fullUrl}/${episode.film.poster}`;
         res.json(episode);
@@ -59,24 +59,24 @@ Router.post("/", addFullUrl, async (req, res) => {
 
         if (missingParams.length > 0) {
             return res.status(400).json({
-                error: `Missing parameters: ${missingParams.join(', ')}`,
+                error: `Thiếu trường: ${missingParams.join(', ')}`,
             });
         }
 
         if (!mongoose.Types.ObjectId.isValid(req.body.film)) {
             console.error(`Invalid film ID: ${req.body.film}`);
-            return res.status(400).json({ error: `Invalid film ID: ${req.body.film}` });
+            return res.status(400).json({ error: `Lỗi phim ID: ${req.body.film}` });
         }
 
         const film = await Film.findById(req.body.film);
         if (!film) {
-            return res.status(404).json({ message: 'Film not found' });
+            return res.status(404).json({ message: 'Phim không tìm thấy' });
         }
 
         // Check part of film exists
         const existingEpisode = await Episode.findOne({ film: film._id, episode: req.body.episode });
         if (existingEpisode) {
-            return res.status(400).json({ error: `There is already episode '${existingEpisode.episode}' in this film '${film.title}'` });
+            return res.status(400).json({ error: `Tập phim '${existingEpisode.episode}' đã tồn tại trong phim '${film.title}'` });
         }
 
         const options = {
@@ -117,24 +117,24 @@ Router.patch("/:id", addFullUrl, async (req, res) => {
         const id = req.params.id
         if (!mongoose.Types.ObjectId.isValid(id)) {
             console.error(`Invalid episode ID: ${id}`);
-            return res.status(400).json({ error: `Invalid episode ID: ${id}` });
+            return res.status(400).json({ error: `Lỗi tập phimm ID: ${id}` });
         }
 
         const episode = await Episode.findById(id).populate('film');
         if (!episode) {
-            return res.status(404).json({ message: 'Episode not found' });
+            return res.status(404).json({ message: 'Tập phim không tìm thấy' });
         }
 
         const film = await Film.findById(episode.film._id);
         if (!film) {
-            return res.status(404).json({ message: 'Film not found' });
+            return res.status(404).json({ message: 'Phim không tìm thấy' });
         }
 
         // Check title film exists
         const existingEpisode = await Episode.findOne({ film: film._id, episode: req.body.episode });
         if (existingEpisode && id != existingEpisode._id) {
             if (existingEpisode) {
-                return res.status(400).json({ error: `There is already episode '${existingEpisode.episode}' in this film '${film.title}'` });
+                return res.status(400).json({ error: `Bộ phim '${existingEpisode.episode}' đã có trong phim '${film.title}'` });
             }
         }
 
@@ -196,12 +196,12 @@ Router.delete('/:id', async (req, res) => {
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             console.error(`Invalid episode ID: ${id}`);
-            return res.status(400).json({ error: `Invalid episode ID: ${id}` });
+            return res.status(400).json({ error: `Lỗi bộ phim ID: ${id}` });
         }
 
         const episode = await Episode.findById(id);
         if (!episode) {
-            return res.status(404).json({ message: 'Episode not found' });
+            return res.status(404).json({ message: 'Bộ phim không được tìm thấy' });
         }
 
         //   Delete the episode object
@@ -218,7 +218,7 @@ Router.delete('/:id', async (req, res) => {
             }
         }
 
-        res.json({ message: 'Delete episode movie successfully' });
+        res.json({ message: 'Xoá bộ phim thành công' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Internal server error' });

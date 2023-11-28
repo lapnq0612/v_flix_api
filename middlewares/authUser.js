@@ -9,6 +9,9 @@ const authUser = async (req, res, next) => {
     }
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.isUser != true) {
+      return res.status(401).json({ msg: "Token không phải tài khoản người dùng" });
+    }
     const { id, lastChangePw } = decoded;
     // Add admin from payload
     req.userId = id;

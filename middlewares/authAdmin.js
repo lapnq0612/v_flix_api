@@ -9,7 +9,9 @@ const authAdmin = (req, res, next) => {
   try {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
+    if (decoded.isAdmin != true) {
+      return res.status(401).json({ msg: "Token không phải tài khoản admin" });
+    }
     // Add admin from payload
     req.admin = decoded;
     next();

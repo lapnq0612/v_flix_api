@@ -59,11 +59,11 @@ Router.get("/related", async (req, res) => {
   try {
     const { slug } = req.query;
     if (!slug) {
-      return res.status(400).json({ message: 'Slug is required' });
+      return res.status(400).json({ message: 'Slug không được để trống' });
     }
     const film = await Film.findOne({ slug, softDelete: false }).populate("episodes");
     if (!film) {
-      return res.status(404).json({ message: 'Film not found' });
+      return res.status(404).json({ message: 'Film không tìm thấy' });
     }
     const related = await Film.find({
       genre: { $in: [...film.genre] },
@@ -280,7 +280,7 @@ Router.post("/", addFullUrl, async (req, res) => {
 
     if (missingParams.length > 0) {
       return res.status(400).json({
-        error: `Missing parameters: ${missingParams.join(', ')}`,
+        error: `Thiếu trường: ${missingParams.join(', ')}`,
       });
     }
 
@@ -288,7 +288,7 @@ Router.post("/", addFullUrl, async (req, res) => {
     const title = req.body.title;
     const existingFilm = await Film.findOne({ title: title });
     if (existingFilm) {
-      return res.status(400).json({ error: `Film with title '${title}' already exists` });
+      return res.status(400).json({ error: `Phim với tiêu '${title}' đã tồn tại` });
     }
 
     const posterExt = film.poster.substring(
@@ -365,18 +365,18 @@ Router.patch("/:id", addFullUrl,async (req, res) => {
     );
 
     if (invalidUpdates.length > 0) {
-      return res.status(400).json({ error: "Invalid updates", invalidFields: invalidUpdates, allowUpdateFields: allowedUpdates });
+      return res.status(400).json({ error: "Lỗi cập nhật", invalidFields: invalidUpdates, allowUpdateFields: allowedUpdates });
     }
 
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       console.error(`Invalid film ID: ${req.params.id}`);
-      return res.status(400).json({ error: `Invalid film ID: ${req.params.id}` });
+      return res.status(400).json({ error: `Lỗi film ID: ${req.params.id}` });
     }
 
     const film = await Film.findById(req.params.id);
 
     if (!film) {
-      return res.status(404).json({ error: 'Film not found' });
+      return res.status(404).json({ error: 'Phim không tìm thấy' });
     }
 
     // Handle poster image upload
@@ -432,13 +432,13 @@ Router.delete("/:id", async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       console.error(`Invalid film ID: ${req.params.id}`);
-      return res.status(400).json({ error: `Invalid film ID: ${req.params.id}` });
+      return res.status(400).json({ error: `Lỗi phim ID: ${req.params.id}` });
     }
 
     const film = await Film.findById(req.params.id).populate("episodes");
 
     if (!film) {
-      return res.status(404).json({ error: 'Film not found' });
+      return res.status(404).json({ error: 'Phim không tìm thấy' });
     }
 
     if (film.poster) {
@@ -453,7 +453,7 @@ Router.delete("/:id", async (req, res) => {
 
     // Remove film
     await film.remove();
-    return res.json({ message: 'Delete movie successfully' });
+    return res.json({ message: 'Xoá phim thành công' });
   } catch (err) {
     res.status(400).json({ success: false, err });
   }
@@ -463,7 +463,7 @@ Router.delete("/soft/:id", async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       console.error(`Invalid film ID: ${req.params.id}`);
-      return res.status(400).json({ error: `Invalid film ID: ${req.params.id}` });
+      return res.status(400).json({ error: `Lỗi phim ID: ${req.params.id}` });
     }
 
     const film = await Film.findByIdAndUpdate(req.params.id, { softDelete: true }, {
@@ -471,10 +471,10 @@ Router.delete("/soft/:id", async (req, res) => {
       runValidators: true,
     }).populate("episodes");
     if (!film) {
-      return res.status(404).json({ error: 'Film not found' });
+      return res.status(404).json({ error: 'Phim không tìm thấy' });
     }
 
-    return res.json({ message: 'Delete soft movie successfully' });
+    return res.json({ message: 'Xoá mềm phim thành công' });
   } catch (err) {
     res.status(400).json({ success: false, err });
   }

@@ -85,6 +85,7 @@ Router.post("/auth", async (req, res) => {
         userName: userExisting.userName,
         userEmail: userExisting.userEmail,
         lastChangePw: userExisting.lastChangePw.toString(),
+        isUser: true,
       },
       process.env.JWT_SECRET,
       { expiresIn: 3600 * 24 },
@@ -130,6 +131,7 @@ Router.post("/googleLogin", async (req, res) => {
           {
             id: userExisting.id,
             lastChangePw: userExisting.lastChangePw.toString(),
+            isUser: true,
           },
           process.env.JWT_SECRET,
           { expiresIn: 3600 * 24 },
@@ -167,7 +169,7 @@ Router.post("/googleLogin", async (req, res) => {
             newUser.userPassword = hash;
             newUser.save().then((user) => {
               jwt.sign(
-                { id: user.id, lastChangePw: user.lastChangePw.toString() },
+                { id: user.id, lastChangePw: user.lastChangePw.toString(), isUser: true, },
                 process.env.JWT_SECRET,
                 {
                   expiresIn: 3600,
@@ -224,6 +226,7 @@ Router.post("/facebookLogin", async (req, res) => {
         {
           id: userExisting.id,
           lastChangePw: userExisting.lastChangePw.toString(),
+          isUser: true,
         },
         process.env.JWT_SECRET,
         { expiresIn: 3600 * 24 },
@@ -260,7 +263,7 @@ Router.post("/facebookLogin", async (req, res) => {
           newUser.userPassword = hash;
           newUser.save().then((user) => {
             jwt.sign(
-              { id: user.id, lastChangePw: user.lastChangePw.toString() },
+              { id: user.id, lastChangePw: user.lastChangePw.toString(), isUser: true, },
               process.env.JWT_SECRET,
               {
                 expiresIn: 3600,
@@ -360,6 +363,7 @@ Router.post("/register", async (req, res) => {
               id: user.id,
               lastChangePw: user.lastChangePw.toString(),
               userName: user.userName,
+              isUser: true,
             },
             process.env.JWT_SECRET,
             {
@@ -671,21 +675,21 @@ Router.get("/deleteCookie", (req, res) => {
 });
 
 Router.post("/history", async (req, res) => {
-    const token = req.signedCookies.tokenUser;
-    if (!token) {
-      return res.json({});
-    }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id);
-    const episodeId = req.body.episodeId
-    if (!mongoose.Types.ObjectId.isValid(episodeId)) {
-      console.error(`Invalid episode ID: ${episodeId}`);
-      return res.status(400).json({ error: `Invalid episode ID: ${episodeId}` });
+  const token = req.signedCookies.tokenUser;
+  if (!token) {
+    return res.json({});
   }
-    const newEpisodeHistory = { date: Date.now(), episodeId: episodeId };
-    user.history.unshift(newEpisodeHistory)
-    await user.save();
-    res.json({ "msg": `Add viewed episode ${episodeId} to history memory` });
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const user = await User.findById(decoded.id);
+  const episodeId = req.body.episodeId
+  if (!mongoose.Types.ObjectId.isValid(episodeId)) {
+    console.error(`Invalid episode ID: ${episodeId}`);
+    return res.status(400).json({ error: `Invalid episode ID: ${episodeId}` });
+  }
+  const newEpisodeHistory = { date: Date.now(), episodeId: episodeId };
+  user.history.unshift(newEpisodeHistory)
+  await user.save();
+  res.json({ "msg": `Add viewed episode ${episodeId} to history memory` });
 
 });
 
