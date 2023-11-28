@@ -12,10 +12,7 @@ const slugify = require('slugify');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const ytdl = require('ytdl-core');
 const filmPath = path.join('uploads', 'films');
-const axios = require('axios');
-const sharp = require('sharp');
 const { promisify } = require('util');
 
 

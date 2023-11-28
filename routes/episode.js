@@ -6,12 +6,7 @@ const Router = express.Router();
 const mongoose = require("mongoose");
 const slugify = require('slugify');
 const fs = require('fs');
-const axios = require('axios');
-const sharp = require('sharp');
-const ytdl = require('ytdl-core');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-const filmPath = path.join('uploads', 'films');
 const { promisify } = require('util');
 
 
