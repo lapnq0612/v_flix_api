@@ -133,12 +133,6 @@ Router.patch("/:id", addFullUrl, async (req, res) => {
             }
         }
 
-        if (episode.video) {
-            if (fs.existsSync(path.join(episode.video))) {
-                await unlinkAsync(path.join(episode.video));
-            }
-        }
-
         const slug = slugify(`${episode.film.title} ${req.body.title} ${req.body.episode}`, {
             lower: true,
             strict: true,
@@ -156,7 +150,6 @@ Router.patch("/:id", addFullUrl, async (req, res) => {
             "description": episode.description,
             "episode": episode.episode,
             "video": episode.video,
-            "url": episode.url,
             "slug": episode.slug,
             "date": episode.date,
             "film": {
