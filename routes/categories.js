@@ -36,9 +36,13 @@ Router.post("/", authAdmin, async (req, res) => {
       });
     }
 
-    const category = await Category.findOne({ genre: genre });
-    if (category) {
-      return res.status(400).json({ error: `Danh mục với thể loại '${genre}' đã tồn tại` });
+    const existingCategoryGenre = await Category.findOne({ genre: genre });
+    if (existingCategoryGenre && existingCategoryGenre._id != id) {
+      return res.status(400).json({ error: `Danh mục với thể loại tiếng anh '${genre}' đã tồn tại` });
+    }
+    const existingCategoryVn = await Category.findOne({ vn: vn });
+    if (existingCategoryVn && existingCategoryVn._id != id) {
+      return res.status(400).json({ error: `Danh mục với thể loại tiếng việt '${vn}' đã tồn tại` });
     }
     const newCategory = new Category({
       genre,
@@ -64,9 +68,13 @@ Router.patch("/:id", authAdmin, async (req, res) => {
       });
     }
 
-    const existingCategory = await Category.findOne({ genre: genre });
-    if (existingCategory && existingCategory._id != id) {
-      return res.status(400).json({ error: `Danh mục với thể loại '${id}' đã tồn tại` });
+    const existingCategoryGenre = await Category.findOne({ genre: genre });
+    if (existingCategoryGenre && existingCategoryGenre._id != id) {
+      return res.status(400).json({ error: `Danh mục với thể loại tiếng anh '${genre}' đã tồn tại` });
+    }
+    const existingCategoryVn = await Category.findOne({ vn: vn });
+    if (existingCategoryVn && existingCategoryVn._id != id) {
+      return res.status(400).json({ error: `Danh mục với thể loại tiếng việt '${vn}' đã tồn tại` });
     }
     const category = await Category.findById(req.params.id);
     category.genre = genre
