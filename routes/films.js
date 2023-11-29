@@ -79,7 +79,7 @@ Router.get("/related", async (req, res) => {
 // @route GET films filter
 // @desc Get Films Filter
 // @access Public
-Router.get("/filter", async (req, res) => {
+Router.get("/filter", addFullUrl, async (req, res) => {
   try {
     const { q, genre, bin } = req.query;
 
@@ -104,6 +104,10 @@ Router.get("/filter", async (req, res) => {
     const films = await Film.find(...filter).sort(
       q ? { score: { $meta: "textScore" } } : "-date"
     ).populate("episodes");
+
+    for (let film of films) {
+      film.poster = `${req.fullUrl}/${film.poster}`;
+    }
     res.json(films);
   } catch (err) {
     console.log(err);
@@ -345,7 +349,7 @@ Router.post("/", addFullUrl, async (req, res) => {
 // @route PATCH film
 // @desc UPDATE A Film
 // @access Public
-Router.patch("/:id", addFullUrl,async (req, res) => {
+Router.patch("/:id", addFullUrl, async (req, res) => {
   try {
     const updates = Object.keys(req.body);
     const allowedUpdates = [
@@ -404,7 +408,9 @@ Router.patch("/:id", addFullUrl,async (req, res) => {
       // Update the film object with the new poster image path
       req.body.poster = `${filmPath}/${posterFilename}`;
     }
-    req.body.titleSearch = req.body.title;
+    if (req.body.title) {
+      req.body.titleSearch = req.body.title;
+    }
     // Update the film object with the request body
     Object.assign(film, req.body);
 
