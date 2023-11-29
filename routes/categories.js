@@ -78,4 +78,19 @@ Router.patch("/:id", authAdmin, async (req, res) => {
   }
 });
 
+// @route DELETE category
+// @desc Remove A Category
+// @access Private
+Router.delete('/:id', async (req, res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    await category.remove();
+
+    return res.json({ message: 'Xoá danh mục thành công' });
+  } catch (err) {
+    res.status(400).json({ success: false, err });
+  }
+});
+
+
 module.exports = Router;
