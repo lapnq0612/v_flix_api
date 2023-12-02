@@ -140,6 +140,14 @@ Router.get("/recent", authUser, addFullUrl, async (req, res) => {
     });
 
     console.log('listEpisodeObjects', listEpisodeObjects)
+    for (const key in episodeTimestamps) {
+      const matchingId = listEpisodeObjects.find(obj => obj._id.toString() === key);
+      if (!matchingId) {
+        delete episodeTimestamps[key];
+      }
+    }
+    user.history = episodeTimestamps
+    await user.save();
     const listEpisodes = [];
     const listFilmIds = [];
     listEpisodeObjects.map(item => {

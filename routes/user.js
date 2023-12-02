@@ -696,13 +696,8 @@ Router.get("/deleteCookie", (req, res) => {
     });
 });
 
-Router.post("/history", async (req, res) => {
-  const token = req.signedCookies.tokenUser;
-  if (!token) {
-    return res.json({});
-  }
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  const user = await User.findById(decoded.id);
+Router.post("/history", authUser, async (req, res) => {
+  const user = req.user;
   const episodeId = req.body.episodeId
   if (!mongoose.Types.ObjectId.isValid(episodeId)) {
     console.error(`Invalid episode ID: ${episodeId}`);
