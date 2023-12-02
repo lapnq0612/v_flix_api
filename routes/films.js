@@ -146,7 +146,14 @@ Router.get("/recent", authUser, addFullUrl, async (req, res) => {
         delete episodeTimestamps[key];
       }
     }
-    user.history = episodeTimestamps
+    const data = []
+    for (const [key, value] of Object.entries(episodeTimestamps)) {
+      data.push({
+        date: value,
+        episodeId: key
+      })
+    }
+    user.history = data
     await user.save();
     const listEpisodes = [];
     const listFilmIds = [];

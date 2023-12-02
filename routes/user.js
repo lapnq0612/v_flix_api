@@ -703,6 +703,10 @@ Router.post("/history", authUser, async (req, res) => {
     console.error(`Invalid episode ID: ${episodeId}`);
     return res.status(400).json({ error: `Invalid episode ID: ${episodeId}` });
   }
+  const histories = user.history.filter((item) => {
+    return item.episodeId !== episodeId;
+  });
+  user.history = histories
   const newEpisodeHistory = { date: Date.now(), episodeId: episodeId };
   user.history.unshift(newEpisodeHistory)
   await user.save();
