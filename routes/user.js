@@ -19,10 +19,24 @@ const mongoose = require("mongoose");
 // @access Private
 Router.get("/filter", authAdmin, async (req, res) => {
   try {
-    const { q } = req.query;
+    // await User.updateMany({}, { $set: { softDelete: false } });
+
+    const { q, bin } = req.query;
+    let progress = {};
+    if (q) {
+      progress.$text = { $search: q };
+    }
+
+    if (bin) {
+      progress.softDelete = true;
+    } else {
+      progress.softDelete = false;
+    }
+
     const filter = q
-      ? [{ $text: { $search: q } }, { score: { $meta: "textScore" } }]
-      : [{}];
+      ? [{ ...progress }, { score: { $meta: "textScore" } }]
+      : [{ ...progress }];
+
     const users = await User.find(...filter)
       .select("-userPassword")
       .sort(q ? { score: { $meta: "textScore" } } : "-date");

@@ -89,7 +89,7 @@ Router.patch("/:id", authAdmin, async (req, res) => {
 // @route DELETE category
 // @desc Remove A Category
 // @access Private
-Router.delete('/:id', async (req, res) => {
+Router.delete('/:id', authAdmin, async (req, res) => {
   try {
     const category = await Category.findById(req.params.id);
     await category.remove();
