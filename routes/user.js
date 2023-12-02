@@ -585,7 +585,15 @@ Router.patch("/resetPassword", async (req, res) => {
 // @access Private
 Router.patch("/:id", async (req, res) => {
   try {
-    const { userName, imageUser, history, isActive, isUpload } = req.body;
+    const { userName, imageUser, history, isActive, isUpload, softDelete } = req.body;
+    if (softDelete) {
+      await User.findByIdAndUpdate(req.params.id, { softDelete: false }, {
+        new: true,
+        runValidators: true,
+      })
+
+      return res.json({ message: 'Bạn đã khôi phục tài khoản thành công' });
+    }
     if (imageUser) {
       let updateUser;
       if (isUpload) {
