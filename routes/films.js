@@ -52,7 +52,7 @@ Router.get("/", addFullUrl, async (req, res) => {
 // @route GET films related
 // @desc Get Films Related
 // @access Public
-Router.get("/related", async (req, res) => {
+Router.get("/related", addFullUrl, async (req, res) => {
   try {
     const { slug } = req.query;
     if (!slug) {
@@ -60,12 +60,18 @@ Router.get("/related", async (req, res) => {
     }
     const film = await Film.findOne({ slug, softDelete: false }).populate("episodes");
     if (!film) {
-      return res.status(404).json({ message: 'Film không tìm thấy' });
+      return res.status(404).json({ message: 'Phim không tìm thấy' });
     }
     const related = await Film.find({
       genre: { $in: [...film.genre] },
       softDelete: false,
     }).populate("episodes").limit(8);
+    film.poster = `${req.fullUrl}/${film.poster}`;
+
+    for (let film of related) {
+      film.poster = `${req.fullUrl}/${film.poster}`;
+    }
+
     res.json({
       film,
       related,
