@@ -586,7 +586,7 @@ Router.patch("/resetPassword", async (req, res) => {
 Router.patch("/:id", async (req, res) => {
   try {
     const { userName, imageUser, history, isActive, isUpload, softDelete } = req.body;
-    if (softDelete) {
+    if (!softDelete) {
       await User.findByIdAndUpdate(req.params.id, { softDelete: false }, {
         new: true,
         runValidators: true,
