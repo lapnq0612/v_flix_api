@@ -693,4 +693,71 @@ Router.post("/history", async (req, res) => {
 
 });
 
+// @route DELETE user
+// @desc Remove A User
+// @access Private
+Router.delete("/:id", async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      console.error(`Invalid film ID: ${req.params.id}`);
+      return res.status(400).json({ error: `Lỗi user ID: ${req.params.id}` });
+    }
+
+    const user = await User.findById(req.params.id)
+
+    if (!user) {
+      return res.status(404).json({ error: 'Người dùng không tìm thấy' });
+    }
+    await user.remove();
+    return res.json({ message: 'Xoá nguời dùng thành công' });
+  } catch (err) {
+    res.status(400).json({ message: 'Xoá nguời dùng thất bại' });
+  }
+});
+
+// @route DELETE user
+// @desc Remove A User
+// @access Private
+Router.delete("/:id", async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      console.error(`Invalid film ID: ${req.params.id}`);
+      return res.status(400).json({ error: `Lỗi user ID: ${req.params.id}` });
+    }
+
+    const user = await User.findById(req.params.id)
+
+    if (!user) {
+      return res.status(404).json({ error: 'Người dùng không tìm thấy' });
+    }
+    await user.remove();
+    return res.json({ message: 'Xoá nguời dùng thành công' });
+  } catch (err) {
+    res.status(400).json({ message: 'Xoá nguời dùng thất bại' });
+  }
+});
+
+// @route SOFT DELETE user
+// @desc Remove A User
+// @access Private
+Router.delete("/soft/:id", async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      console.error(`Invalid user ID: ${req.params.id}`);
+      return res.status(400).json({ error: `Lỗi người ID: ${req.params.id}` });
+    }
+
+    const user = await User.findByIdAndUpdate(req.params.id, { softDelete: true }, {
+      new: true,
+      runValidators: true,
+    });
+    if (!user) {
+      return res.status(404).json({ error: 'Người dùng không tìm thấy' });
+    }
+    return res.json({ message: 'Xoá tạm thời người dùng thành công' });
+  } catch (err) {
+    res.status(400).json({ message: 'Xoá tạm thời người dùng thất bại' });
+  }
+});
+
 module.exports = Router;
