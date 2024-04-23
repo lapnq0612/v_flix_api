@@ -48,6 +48,10 @@ const FilmSchema = new Schema({
     type: Number,
     required: true,
   },
+  prices: {
+    type: Number,
+    required: true,
+  },
   date: {
     type: Date,
     default: Date.now,

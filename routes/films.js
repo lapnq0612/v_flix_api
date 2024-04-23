@@ -264,6 +264,7 @@ Router.post("/", addFullUrl, async (req, res) => {
       'actor': req.body.actor,
       'episodes': req.body.episodes,
       'numberAccounts': req.body.numberAccounts,
+      'prices': req.body.prices,
     }
 
     const missingParams = [
@@ -277,7 +278,8 @@ Router.post("/", addFullUrl, async (req, res) => {
       'genre',
       'actor',
       'episodes',
-      'numberAccounts'
+      'numberAccounts',
+      'prices'
     ];
 
     const requiredEpisodeKeys = [
@@ -343,6 +345,7 @@ Router.post("/", addFullUrl, async (req, res) => {
       actor: film.actor,
       genre: film.genre,
       numberAccounts: film.numberAccounts,
+      prices: film.prices
     });
 
     // create account file
@@ -552,5 +555,9 @@ Router.get("/checkSlug/:slug", async (req, res) => {
     console.log(err);
   }
 });
+
+Router.post("/create-checkout-section", async(req, res) => {
+
+}) 
 
 module.exports = Router;
