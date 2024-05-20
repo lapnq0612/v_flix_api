@@ -556,8 +556,4 @@ Router.get("/checkSlug/:slug", async (req, res) => {
   }
 });
 
-Router.post("/create-checkout-section", async(req, res) => {
-
-}) 
-
 module.exports = Router;
