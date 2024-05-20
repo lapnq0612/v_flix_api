@@ -44,6 +44,14 @@ const FilmSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Episode'
   }],
+  numberAccounts: {
+    type: Number,
+    required: true,
+  },
+  prices: {
+    type: Number,
+    required: true,
+  },
   date: {
     type: Date,
     default: Date.now,

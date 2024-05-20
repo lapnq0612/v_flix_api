@@ -14,6 +14,8 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const filmPath = path.join('uploads', 'films');
 const { promisify } = require('util');
+const AccountFilm = require("../models/AccountFilm");
+const { uniqueUsernameGenerator } = require("unique-username-generator");
 
 
 const unlinkAsync = promisify(fs.unlink);
@@ -261,6 +263,8 @@ Router.post("/", addFullUrl, async (req, res) => {
       'genre': req.body.genre,
       'actor': req.body.actor,
       'episodes': req.body.episodes,
+      'numberAccounts': req.body.numberAccounts,
+      'prices': req.body.prices,
     }
 
     const missingParams = [
@@ -273,7 +277,9 @@ Router.post("/", addFullUrl, async (req, res) => {
       'poster',
       'genre',
       'actor',
-      'episodes'
+      'episodes',
+      'numberAccounts',
+      'prices'
     ];
 
     const requiredEpisodeKeys = [
@@ -338,8 +344,37 @@ Router.post("/", addFullUrl, async (req, res) => {
       description: film.description,
       actor: film.actor,
       genre: film.genre,
+      numberAccounts: film.numberAccounts,
+      prices: film.prices
     });
 
+    // create account file
+    const listAccountGenerate = ['IronMan','DoctorStrange','Hulk','CaptainAmerica','Thanos']
+    const configAccount = {
+      dictionaries: [listAccountGenerate],
+      separator: '-',
+      style: 'capital',
+      randomDigits: 6,
+    }
+  
+    const lastID = newFilm.id.toString().slice(-4)
+    let listAccountFilm = [];
+    for (let index = 0; index < film.numberAccounts; index++) {
+      const usernameGenerated = `${uniqueUsernameGenerator(configAccount)}${lastID}`;
+
+      console.log(usernameGenerated, 'usernameGenerated')
+      const accountFilm = {
+        film: newFilm._id,
+        account: usernameGenerated,
+        password: '$2a$12$dM0XlXStK57/zA1buccDMe.RigjW38J5z0BkFXdKSWmQ2rsWhc2l6' // Aa@12345
+      }
+
+      listAccountFilm.push(accountFilm)
+    }
+    await AccountFilm.insertMany(listAccountFilm);
+    // await newAccountFilms.save();
+
+    // create episodes film
     const Episodes = film.episodes.map((episode, index) => {
       const slug = `${film.title} ${episode.title} ${episode.episode}`;
       return {
@@ -520,5 +555,9 @@ Router.get("/checkSlug/:slug", async (req, res) => {
     console.log(err);
   }
 });
+
+Router.post("/create-checkout-section", async(req, res) => {
+
+}) 
 
 module.exports = Router;
