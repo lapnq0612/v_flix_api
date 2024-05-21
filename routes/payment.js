@@ -1,5 +1,6 @@
 const express = require('express');
 const Payment = require('../models/Payments');
+const Film = require("../models/Film");
 const Router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 
@@ -10,12 +11,13 @@ const endpointSecret = "whsec_08a286229f322353ef7446d65ef2a1987b20be1fc8616296fd
 // @desc Create A New Post
 // @access Public
 Router.post('/create-checkout-session', async (req, res) => {
-  const { amount, customerId, customerEmail } = req.body;
+  const { amount, customerId, customerEmail, filmId } = req.body;
   const paymentID = uuidv4()
   const customer = await stripe.customers.create({
     metadata: {
       user_id: customerId,
       id_payment: paymentID,
+      id_film: filmId,
     }
   })
 
@@ -41,7 +43,7 @@ Router.post('/create-checkout-session', async (req, res) => {
 
     const newPayment = new Payment({
       customerId: customerId,
-      idFilm: '65ea8f6c9eb39417a1c1696a',
+      idFilm: filmId,
       paymentId: paymentID,
     })
     await newPayment.save()
@@ -96,6 +98,11 @@ Router.post('/webhook', async(req, res) => {
         },
         { new: true }
       )
+      
+      const filmUpdate = await Film.findById(customer.metadata.id_film);
+      filmUpdate.numberAccounts = Number(filmUpdate.numberAccounts) - 1;
+      filmUpdate.save()
+
       res.json(update)
     })
     .catch(err => console.log(err.message))

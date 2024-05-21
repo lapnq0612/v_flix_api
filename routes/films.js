@@ -1,6 +1,7 @@
 const express = require("express");
 const User = require("../models/User");
 const Film = require("../models/Film");
+const Payment = require('../models/Payments');
 const jwt = require("jsonwebtoken");
 const Episode = require("../models/Episode");
 const addFullUrl = require("../utils/url");
@@ -27,6 +28,18 @@ Router.get("/amount", authAdmin, async (req, res) => {
   const amount = await Film.countDocuments();
   res.json(amount);
 });
+
+Router.get('/buyer/:idUser', async (req, res) => {
+  try {
+    const { idUser } = req.params;
+
+    const filmBuyer = await Payment.find({customerId: idUser})
+
+    res.json(filmBuyer);
+  } catch (error) {
+    console.log(error)
+  }
+})
 
 // @route GET film
 // @desc Get A Film
