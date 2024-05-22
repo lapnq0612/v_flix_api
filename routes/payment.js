@@ -11,7 +11,7 @@ const endpointSecret = "whsec_08a286229f322353ef7446d65ef2a1987b20be1fc8616296fd
 // @desc Create A New Post
 // @access Public
 Router.post('/create-checkout-session', async (req, res) => {
-  const { amount, customerId, customerEmail, filmId } = req.body;
+  const { amount, customerId, price, filmId, nameFilm } = req.body;
   const paymentID = uuidv4()
   const customer = await stripe.customers.create({
     metadata: {
@@ -27,11 +27,11 @@ Router.post('/create-checkout-session', async (req, res) => {
       line_items: [
         {
           price_data: {
-            currency: 'usd',
+            currency: 'VND',
             product_data: {
-              name: 'A'
+              name: nameFilm
             },
-            unit_amount: 200*100
+            unit_amount: amount
           },
           quantity: 1,
         }
@@ -45,6 +45,7 @@ Router.post('/create-checkout-session', async (req, res) => {
       customerId: customerId,
       idFilm: filmId,
       paymentId: paymentID,
+      price
     })
     await newPayment.save()
     res.json({
@@ -100,7 +101,7 @@ Router.post('/webhook', async(req, res) => {
       )
       
       const filmUpdate = await Film.findById(customer.metadata.id_film);
-      filmUpdate.numberAccounts = Number(filmUpdate.numberAccounts) - 1;
+      filmUpdate.remainingAccountNumber = Number(filmUpdate.remainingAccountNumber) - 1;
       filmUpdate.save()
 
       res.json(update)
@@ -108,5 +109,7 @@ Router.post('/webhook', async(req, res) => {
     .catch(err => console.log(err.message))
   }
 })
+
+
 
 module.exports = Router;

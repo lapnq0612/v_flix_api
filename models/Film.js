@@ -52,6 +52,9 @@ const FilmSchema = new Schema({
     type: Number,
     required: true,
   },
+  remainingAccountNumber: {
+    type: Number,
+  },
   date: {
     type: Date,
     default: Date.now,

@@ -26,6 +26,10 @@ const PaymentsSchema = new Schema({
     required: true,
     default: 'stripe'
   },
+  price: {
+    type: Number,
+    require: true,
+  },
   date: {
     type: Date,
     default: Date.now,
