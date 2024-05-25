@@ -11,7 +11,7 @@ const endpointSecret = "whsec_08a286229f322353ef7446d65ef2a1987b20be1fc8616296fd
 // @desc Create A New Post
 // @access Public
 Router.post('/create-checkout-session', async (req, res) => {
-  const { amount, customerId, price, filmId, nameFilm } = req.body;
+  const { amount, customerId, filmId, nameFilm } = req.body;
   const paymentID = uuidv4()
   const customer = await stripe.customers.create({
     metadata: {
@@ -37,15 +37,15 @@ Router.post('/create-checkout-session', async (req, res) => {
         }
       ],
       mode: 'payment',
-      success_url: 'https://forum.caeruxlab.com/d/63-tich-hop-stripe-va-nodejs',
-      cancel_url: 'https://forum.caeruxlab.com/d/63-tich-hop-stripe-va-nodejs'
+      success_url: 'http://localhost:3000/payment-seccess',
+      cancel_url: 'http://localhost:3000/payment-seccess'
     });
 
     const newPayment = new Payment({
       customerId: customerId,
       idFilm: filmId,
       paymentId: paymentID,
-      price
+      price: amount,
     })
     await newPayment.save()
     res.json({
