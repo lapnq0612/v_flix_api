@@ -166,6 +166,7 @@ Router.post('/payment-bank', async (req, res) => {
     customerEmail: customerUser.userEmail,
     paymentId: paymentID,
     price: amount,
+    paymentMethod: 'transfer'
   })
   await newPayment.save()
 
