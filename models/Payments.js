@@ -10,9 +10,17 @@ const PaymentsSchema = new Schema({
     type: String,
     required: true,
   },
+  customerEmail: {
+    type: String,
+    require: true,
+  },
   idFilm: {
     type: String,
     required: true
+  },
+  nameFilm: {
+    type: String,
+    required: true,
   },
   paymentStatus: {
     // type: 'pending' | 'expired' | 'actived',
