@@ -47,6 +47,7 @@ app.use("/api/episodes", require("./routes/episode"));
 app.use("/api/categories", require("./routes/categories"));
 app.use("/api/subscription", require("./routes/subscription"));
 app.use("/api/file", require("./routes/file"));
+app.use("/api/payment", require("./routes/payment"));
 
 // app.use("/", require("./routes/dumpData"));
 

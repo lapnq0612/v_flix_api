@@ -445,7 +445,7 @@ Router.patch("/forgotPassword", async (req, res) => {
         rejectUnauthorized: false,
       },
     });
-    const url = `${process.env.NODE_ENV !== 'production' ? "http://localhost:5000" : process.env.LINK_RESET_PASSWORD}/reset-password/${token}`;
+    const url = `${process.env.NODE_ENV !== 'production' ? "http://localhost:9000" : process.env.LINK_RESET_PASSWORD}/reset-password/${token}`;
     var mainOptions = {
       from: "VMOflix Support",
       to: email,

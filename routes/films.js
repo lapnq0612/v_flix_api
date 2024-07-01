@@ -1,6 +1,7 @@
 const express = require("express");
 const User = require("../models/User");
 const Film = require("../models/Film");
+const Payment = require('../models/Payments');
 const jwt = require("jsonwebtoken");
 const Episode = require("../models/Episode");
 const addFullUrl = require("../utils/url");
@@ -14,7 +15,6 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const filmPath = path.join('uploads', 'films');
 const { promisify } = require('util');
-const AccountFilm = require("../models/AccountFilm");
 const { uniqueUsernameGenerator } = require("unique-username-generator");
 
 
@@ -27,6 +27,18 @@ Router.get("/amount", authAdmin, async (req, res) => {
   const amount = await Film.countDocuments();
   res.json(amount);
 });
+
+Router.get('/buyer/:idUser', async (req, res) => {
+  try {
+    const { idUser } = req.params;
+
+    const filmBuyer = await Payment.find({customerId: idUser})
+
+    res.json(filmBuyer);
+  } catch (error) {
+    console.log(error)
+  }
+})
 
 // @route GET film
 // @desc Get A Film
@@ -345,34 +357,9 @@ Router.post("/", addFullUrl, async (req, res) => {
       actor: film.actor,
       genre: film.genre,
       numberAccounts: film.numberAccounts,
-      prices: film.prices
+      prices: film.prices,
+      remainingAccountNumber: film.numberAccounts,
     });
-
-    // create account file
-    const listAccountGenerate = ['IronMan','DoctorStrange','Hulk','CaptainAmerica','Thanos']
-    const configAccount = {
-      dictionaries: [listAccountGenerate],
-      separator: '-',
-      style: 'capital',
-      randomDigits: 6,
-    }
-  
-    const lastID = newFilm.id.toString().slice(-4)
-    let listAccountFilm = [];
-    for (let index = 0; index < film.numberAccounts; index++) {
-      const usernameGenerated = `${uniqueUsernameGenerator(configAccount)}${lastID}`;
-
-      console.log(usernameGenerated, 'usernameGenerated')
-      const accountFilm = {
-        film: newFilm._id,
-        account: usernameGenerated,
-        password: '$2a$12$dM0XlXStK57/zA1buccDMe.RigjW38J5z0BkFXdKSWmQ2rsWhc2l6' // Aa@12345
-      }
-
-      listAccountFilm.push(accountFilm)
-    }
-    await AccountFilm.insertMany(listAccountFilm);
-    // await newAccountFilms.save();
 
     // create episodes film
     const Episodes = film.episodes.map((episode, index) => {
@@ -555,9 +542,5 @@ Router.get("/checkSlug/:slug", async (req, res) => {
     console.log(err);
   }
 });
-
-Router.post("/create-checkout-section", async(req, res) => {
-
-}) 
 
 module.exports = Router;
